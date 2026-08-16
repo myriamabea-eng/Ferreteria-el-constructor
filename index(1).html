@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferretería El Constructor — Prototipo</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f4f6f8;color:#1f2937}
+.app{display:flex;min-height:100vh}.sidebar{width:235px;background:#17202a;color:#fff;padding:24px 16px;position:fixed;top:0;bottom:0}
+.logo{font-size:20px;font-weight:800;padding:8px 10px 24px}.logo span{color:#f59e0b}.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;text-align:left;padding:13px 12px;border-radius:9px;margin:3px 0;cursor:pointer;font-size:14px}.nav button.active,.nav button:hover{background:#263442;color:#fff}
+.main{margin-left:235px;width:calc(100% - 235px);padding:28px 34px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.top h1{margin:0;font-size:25px}.user{background:#fff;padding:9px 14px;border-radius:10px;box-shadow:0 2px 10px #0000000a}
+.screen{display:none}.screen.active{display:block}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:#fff;border-radius:13px;padding:20px;box-shadow:0 2px 12px #0000000a}.card small{color:#6b7280}.num{font-size:27px;font-weight:800;margin-top:7px}.section{background:#fff;border-radius:13px;padding:22px;margin-top:18px;box-shadow:0 2px 12px #0000000a}.section h2{font-size:17px;margin:0 0 15px}
+table{width:100%;border-collapse:collapse}th,td{padding:12px 9px;text-align:left;border-bottom:1px solid #edf0f2;font-size:14px}th{color:#6b7280;font-weight:600}.badge{padding:5px 8px;border-radius:999px;font-size:12px}.ok{background:#dcfce7;color:#166534}.warn{background:#fef3c7;color:#92400e}.danger{background:#fee2e2;color:#991b1b}
+.grid2{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.btn{border:0;border-radius:8px;padding:10px 15px;background:#f59e0b;color:#17202a;font-weight:700;cursor:pointer}.btn.secondary{background:#e5e7eb}.row{display:flex;gap:10px;align-items:center}.input,select{width:100%;padding:10px;border:1px solid #d8dee5;border-radius:8px;background:#fff}.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#17202a,#263442)}.login{width:390px;background:#fff;border-radius:16px;padding:35px;box-shadow:0 20px 60px #0005}.login h1{margin:0 0 6px}.login p{color:#6b7280;margin-bottom:25px}.login .input{margin:7px 0 13px}.full{width:100%;margin-top:8px}.note{font-size:12px;color:#6b7280;margin-top:16px;text-align:center}
+.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;z-index:10}.modal.show{display:flex}.modal-box{background:#fff;padding:24px;border-radius:14px;width:420px;max-width:92vw;box-shadow:0 20px 60px #0004}.close{float:right;border:0;background:none;font-size:20px;cursor:pointer}
+.message{display:none;margin-top:14px;padding:11px 13px;border-radius:8px;font-size:14px}.message.show{display:block}.message.okmsg{background:#dcfce7;color:#166534}.message.errmsg{background:#fee2e2;color:#991b1b}
+.qty{width:70px;padding:7px;border:1px solid #d8dee5;border-radius:7px}
+.small{font-size:12px;color:#6b7280}
+@media(max-width:900px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px)}.cards{grid-template-columns:repeat(2,1fr)}} 
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login-wrap">
+  <div class="login">
+    <h1>El Constructor</h1>
+    <p>Sistema de Información · Acceso al personal</p>
+    <label>Usuario</label><input id="loginUser" class="input" placeholder="Ej. maria.ventas">
+    <label>Contraseña</label><input id="loginPass" type="password" class="input" placeholder="••••••••">
+    <button class="btn full" onclick="login()">Ingresar al sistema</button>
+    <div class="note">Prototipo académico · no requiere credenciales reales</div>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none">
+<aside class="sidebar">
+  <div class="logo">EL <span>CONSTRUCTOR</span></div>
+  <div class="nav">
+    <button class="active" onclick="show('dashboard',this)">▦ Dashboard</button>
+    <button onclick="show('ventas',this)">▤ Ventas</button>
+    <button onclick="show('inventario',this)">▥ Inventario</button>
+    <button onclick="show('reportes',this)">◴ Reportes</button>
+  </div>
+  <div style="position:absolute;bottom:20px;left:16px;right:16px;color:#94a3b8;font-size:12px">Sucursal Managua · Administrador</div>
+</aside>
+
+<main class="main">
+  <div class="top"><h1 id="title">Dashboard</h1><div class="user">👤 María López · Administradora</div></div>
+
+  <section id="dashboard" class="screen active">
+    <div class="cards">
+      <div class="card"><small>Ventas del día</small><div class="num" id="ventasDia">C$ 48,650</div><span class="badge ok">+12.4%</span></div>
+      <div class="card"><small>Productos en inventario</small><div class="num" id="productosInventario">1,284</div><span class="badge ok">Stock controlado</span></div>
+      <div class="card"><small>Productos con bajo stock</small><div class="num" id="bajoStockDashboard">17</div><span class="badge warn">Revisar compras</span></div>
+      <div class="card"><small>Ventas registradas</small><div class="num" id="ventasRegistradas">8</div><span class="badge ok">Operaciones del día</span></div>
+    </div>
+    <div class="grid2">
+      <div class="section"><h2>Resumen de ventas</h2><table><tr><th>Periodo</th><th>Ventas</th><th>Variación</th></tr><tr><td>Hoy</td><td id="ventasHoyTabla">C$ 48,650</td><td><span class="badge ok">+12.4%</span></td></tr><tr><td>Ayer</td><td>C$ 43,280</td><td>—</td></tr><tr><td>Esta semana</td><td>C$ 291,430</td><td><span class="badge ok">+8.1%</span></td></tr></table></div>
+      <div class="section"><h2>Alertas de inventario</h2><div id="alertasDashboard"></div><button class="btn secondary" onclick="show('inventario',document.querySelectorAll('.nav button')[2])">Ver inventario</button></div>
+    </div>
+  </section>
+
+  <section id="ventas" class="screen">
+    <div class="section">
+      <div class="row" style="justify-content:space-between"><h2>Nueva venta</h2><button class="btn" onclick="openModal()">+ Agregar producto</button></div>
+      <div class="row">
+        <input id="salesSearch" class="input" placeholder="Buscar producto por código o nombre" onkeydown="if(event.key==='Enter')buscarParaVenta()">
+        <button class="btn secondary" onclick="buscarParaVenta()">Buscar</button>
+      </div>
+      <div id="salesMessage" class="message"></div>
+      <div id="salesSearchResult" style="display:none;margin-top:14px;padding:14px;border:1px solid #e5e7eb;border-radius:10px;background:#f9fafb"></div>
+      <table style="margin-top:18px">
+        <thead><tr><th>Código</th><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th></tr></thead>
+        <tbody id="saleBody"></tbody>
+      </table>
+      <div style="text-align:right;margin-top:18px"><b>Total: <span id="saleTotal">C$ 0.00</span></b><br><button class="btn" style="margin-top:10px" onclick="finishSale()">Registrar venta</button></div>
+    </div>
+  </section>
+
+  <section id="inventario" class="screen">
+    <div class="section">
+      <div class="row">
+        <input id="inventorySearch" class="input" placeholder="Buscar por código o nombre" onkeydown="if(event.key==='Enter')renderInventory()">
+        <select id="inventoryCategory" class="input" onchange="renderInventory()"><option>Todas las categorías</option><option>Materiales</option><option>Herramientas</option><option>Plomería</option></select>
+        <button class="btn" onclick="renderInventory()">Buscar</button>
+      </div>
+      <table style="margin-top:18px">
+        <thead><tr><th>Código</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Estado</th><th>Precio</th></tr></thead>
+        <tbody id="inventoryBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="reportes" class="screen">
+    <div class="cards">
+      <div class="card"><small>Ventas mensuales</small><div class="num" id="monthlySales">C$ 1.42 M</div></div>
+      <div class="card"><small>Producto más vendido</small><div class="num" style="font-size:20px">Cemento gris</div></div>
+      <div class="card"><small>Ticket promedio</small><div class="num" id="avgTicket">C$ 875</div></div>
+      <div class="card"><small>Alertas</small><div class="num" id="reportAlerts">17</div></div>
+    </div>
+    <div class="section"><h2>Reporte gerencial</h2><p>El sistema permite consultar ventas, existencias y productos con bajo stock para apoyar decisiones de compra a proveedores.</p><button class="btn" onclick="generateReport()">Generar reporte</button><div id="reportMessage" class="message"></div></div>
+  </section>
+</main>
+</div>
+
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <button class="close" onclick="closeModal()">×</button>
+    <h2>Agregar producto</h2>
+    <label>Producto</label>
+    <select id="productSelect" class="input"></select>
+    <div class="small" id="productStockInfo" style="margin:7px 0 12px"></div>
+    <label>Cantidad</label>
+    <input id="productQty" class="input" type="number" value="1" min="1">
+    <div id="modalMessage" class="message"></div>
+    <button class="btn full" onclick="addProduct()">Agregar</button>
+  </div>
+</div>
+
+<div id="saleConfirmModal" class="modal">
+  <div class="modal-box">
+    <button class="close" onclick="closeSaleConfirmation()">×</button>
+    <h2>Venta registrada</h2>
+    <p>La venta fue registrada correctamente y el inventario fue actualizado.</p>
+    <table>
+      <tr><td><b>N.º de venta</b></td><td id="saleNumber"></td></tr>
+      <tr><td><b>Total</b></td><td id="confirmedTotal"></td></tr>
+      <tr><td><b>Fecha</b></td><td id="confirmedDate"></td></tr>
+    </table>
+    <button class="btn full" onclick="closeSaleConfirmation()">Aceptar</button>
+  </div>
+</div>
+
+<script>
+const products = [
+  {code:'P-00125', name:'Cemento gris 42.5 kg', category:'Materiales', stock:5, price:410},
+  {code:'P-00481', name:'Martillo 16 oz', category:'Herramientas', stock:34, price:285},
+  {code:'P-00732', name:'Tubo PVC 1/2"', category:'Plomería', stock:7, price:95},
+  {code:'P-00910', name:'Taladro 1/2"', category:'Herramientas', stock:3, price:2450}
+];
+
+let cart = [
+  {code:'P-00125', qty:2},
+  {code:'P-00481', qty:1}
+];
+let daySales = 48650;
+let registeredSales = 8;
+let saleCounter = 108;
+
+function money(v){return 'C$ ' + Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+function login(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  renderAll();
+}
+
+function show(id,btn){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.getElementById('title').textContent=id.charAt(0).toUpperCase()+id.slice(1);
+  if(id==='inventario')renderInventory();
+  if(id==='reportes')updateDashboard();
+}
+
+function renderProductSelect(selectedCode){
+  const sel=document.getElementById('productSelect');
+  sel.innerHTML='';
+  products.forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p.code;
+    o.textContent=`${p.code} — ${p.name} (Stock: ${p.stock})`;
+    sel.appendChild(o);
+  });
+  if(selectedCode)sel.value=selectedCode;
+  sel.onchange=updateStockInfo;
+  updateStockInfo();
+}
+
+function updateStockInfo(){
+  const p=products.find(x=>x.code===document.getElementById('productSelect').value);
+  document.getElementById('productStockInfo').textContent=p?`Disponible: ${p.stock} unidades · Precio: ${money(p.price)}`:'';
+}
+
+function openModal(selectedCode){
+  renderProductSelect(selectedCode);
+  document.getElementById('productQty').value=1;
+  setMessage('modalMessage','');
+  document.getElementById('modal').classList.add('show');
+}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+
+function setMessage(id,text,type='ok'){
+  const el=document.getElementById(id);
+  el.className='message';
+  el.textContent=text;
+  if(text){
+    el.classList.add('show',type==='err'?'errmsg':'okmsg');
+  }
+}
+
+function buscarParaVenta(){
+  const q=document.getElementById('salesSearch').value.trim().toLowerCase();
+  const result=document.getElementById('salesSearchResult');
+  result.style.display='none';
+  result.innerHTML='';
+
+  if(!q){
+    setMessage('salesMessage','Escriba el nombre o código de un producto.','err');
+    return;
+  }
+
+  const matches=products.filter(x =>
+    x.code.toLowerCase().includes(q) || x.name.toLowerCase().includes(q)
+  );
+
+  if(matches.length===0){
+    setMessage('salesMessage','No se encontró un producto con esa búsqueda.','err');
+    return;
+  }
+
+  setMessage('salesMessage',`${matches.length} producto(s) encontrado(s).`);
+
+  result.innerHTML = `
+    <table>
+      <thead>
+        <tr><th>Código</th><th>Producto</th><th>Stock</th><th>Precio</th><th>Acción</th></tr>
+      </thead>
+      <tbody>
+        ${matches.map(p => {
+          const disabled = p.stock <= 0 ? 'disabled' : '';
+          return `<tr>
+            <td>${p.code}</td>
+            <td>${p.name}</td>
+            <td>${p.stock}</td>
+            <td>${money(p.price)}</td>
+            <td><button class="btn" ${disabled} onclick="openModal('${p.code}')">Agregar</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  result.style.display='block';
+}
+
+function addProduct(){
+  const code=document.getElementById('productSelect').value;
+  const qty=parseInt(document.getElementById('productQty').value,10);
+  const p=products.find(x=>x.code===code);
+  if(!qty || qty<1){setMessage('modalMessage','Ingrese una cantidad válida.','err');return;}
+  const current=cart.find(x=>x.code===code);
+  const already=current?current.qty:0;
+  if(qty+already>p.stock){setMessage('modalMessage',`No hay suficiente stock. Disponible: ${p.stock} unidades.`,'err');return;}
+  if(current)current.qty+=qty; else cart.push({code,qty});
+  renderSale();
+  closeModal();
+  const result=document.getElementById('salesSearchResult');
+  if(result){result.style.display='none'; result.innerHTML='';}
+  document.getElementById('salesSearch').value='';
+  setMessage('salesMessage',`${p.name} fue agregado a la venta.`);
+}
+
+function renderSale(){
+  const body=document.getElementById('saleBody');
+  body.innerHTML='';
+  let total=0;
+  cart.forEach(item=>{
+    const p=products.find(x=>x.code===item.code);
+    const subtotal=p.price*item.qty;
+    total+=subtotal;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.code}</td><td>${p.name}</td><td><input class="qty" type="number" min="1" max="${p.stock}" value="${item.qty}" onchange="changeQty('${p.code}',this.value)"></td><td>${money(p.price)}</td><td>${money(subtotal)}</td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('saleTotal').textContent=money(total);
+}
+
+function changeQty(code,value){
+  const p=products.find(x=>x.code===code);
+  let q=parseInt(value,10);
+  if(!q || q<1)q=1;
+  if(q>p.stock){
+    q=p.stock;
+    setMessage('salesMessage',`La cantidad se ajustó al stock disponible de ${p.stock} unidades.`,'err');
+  }
+  const item=cart.find(x=>x.code===code);
+  item.qty=q;
+  renderSale();
+}
+
+function finishSale(){
+  if(cart.length===0){setMessage('salesMessage','Agregue al menos un producto antes de registrar la venta.','err');return;}
+  for(const item of cart){
+    const p=products.find(x=>x.code===item.code);
+    if(item.qty>p.stock){setMessage('salesMessage',`No hay stock suficiente de ${p.name}.`,'err');return;}
+  }
+  const total=cart.reduce((s,item)=>{
+    const p=products.find(x=>x.code===item.code);
+    return s+p.price*item.qty;
+  },0);
+
+  cart.forEach(item=>{
+    const p=products.find(x=>x.code===item.code);
+    p.stock-=item.qty;
+  });
+
+  daySales+=total;
+  registeredSales++;
+  saleCounter++;
+  document.getElementById('saleNumber').textContent=`V-${String(saleCounter).padStart(4,'0')}`;
+  document.getElementById('confirmedTotal').textContent=money(total);
+  document.getElementById('confirmedDate').textContent=new Date().toLocaleString('es-NI');
+  document.getElementById('saleConfirmModal').classList.add('show');
+
+  cart=[];
+  renderAll();
+  setMessage('salesMessage','Venta registrada correctamente. El inventario fue actualizado.');
+}
+
+function closeSaleConfirmation(){document.getElementById('saleConfirmModal').classList.remove('show')}
+
+function stockStatus(stock){
+  if(stock<=3)return ['Crítico','danger'];
+  if(stock<=7)return ['Bajo','warn'];
+  return ['Disponible','ok'];
+}
+
+function renderInventory(){
+  const q=(document.getElementById('inventorySearch')?.value||'').trim().toLowerCase();
+  const cat=document.getElementById('inventoryCategory')?.value||'Todas las categorías';
+  const body=document.getElementById('inventoryBody');
+  if(!body)return;
+  body.innerHTML='';
+  products.filter(p=>{
+    const matchText=!q||p.code.toLowerCase().includes(q)||p.name.toLowerCase().includes(q);
+    const matchCat=cat==='Todas las categorías'||p.category===cat;
+    return matchText&&matchCat;
+  }).forEach(p=>{
+    const [txt,cls]=stockStatus(p.stock);
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${p.code}</td><td>${p.name}</td><td>${p.category}</td><td>${p.stock}</td><td><span class="badge ${cls}">${txt}</span></td><td>${money(p.price)}</td>`;
+    body.appendChild(tr);
+  });
+}
+
+function updateDashboard(){
+  document.getElementById('ventasDia').textContent=money(daySales).replace('.00','');
+  document.getElementById('ventasHoyTabla').textContent=money(daySales).replace('.00','');
+  document.getElementById('ventasRegistradas').textContent=registeredSales;
+  const low=products.filter(p=>p.stock<=7);
+  document.getElementById('bajoStockDashboard').textContent=low.length;
+  document.getElementById('reportAlerts').textContent=low.length;
+  const alerts=document.getElementById('alertasDashboard');
+  alerts.innerHTML=low.length?low.map(p=>`<p>🔸 ${p.name} — <b>${p.stock} unidades</b></p>`).join(''):'<p><span class="badge ok">Sin alertas de stock</span></p>';
+  const monthly=1420000+(daySales-48650);
+  document.getElementById('monthlySales').textContent='C$ '+(monthly/1000000).toFixed(2)+' M';
+  document.getElementById('avgTicket').textContent=money(daySales/registeredSales).replace('.00','');
+}
+
+function generateReport(){
+  updateDashboard();
+  setMessage('reportMessage','Reporte actualizado correctamente con la información actual de ventas e inventario.');
+}
+
+function renderAll(){
+  renderSale();
+  renderInventory();
+  updateDashboard();
+  renderProductSelect();
+}
+
+renderAll();
+</script>
+</body>
+</html>
